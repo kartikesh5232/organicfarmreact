@@ -17,7 +17,7 @@ class UserService {
             });
 
             localStorage.setItem('Token', JSON.stringify(response.data.token));
-      
+            localStorage.setItem('Authority', JSON.stringify(response.data.authorities));
             return response.data;
 
         } catch (error) {

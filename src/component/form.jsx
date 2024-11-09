@@ -1,91 +1,184 @@
-import React from 'react';
-
+import React, { useEffect } from 'react';
+import { useState } from 'react';
+import axios from 'axios';
 
 const Form = () => {
+
+    const [authority, setAuthority] = useState(null);
+
+
+
+    useEffect(() => {
+        const getAuthority = async () => {
+            try {
+                const auth = await localStorage.getItem("Authority");
+
+                setAuthority(auth);
+            } catch (error) {
+                console.error("Failed to fetch authority from localStorage:", error);
+            }
+        };
+        getAuthority();
+    }, []);
+
+
+
+
+    const [formData, setFormData] = useState({
+        title: '',
+        category: '',
+        description: '',
+        price: '',
+        file: null,
+    });
+
+    const handleChange = (e) => {
+        const { name, value, files } = e.target;
+        if (name === 'file') {
+
+            setFormData(prevUser => ({
+                ...prevUser,
+                file: files[0]
+
+            }));
+
+        } else {
+
+            setFormData(prevUser => ({
+                ...prevUser,
+                [name]: value
+            }));
+        }
+
+    };
+
+    const handleFileUpload = async (e) => {
+        e.preventDefault();
+        const data = new FormData();
+        data.append('title', formData.title);
+        data.append('description', formData.description);
+        data.append('category', formData.category);
+        data.append('price', formData.price);
+        data.append('file', formData.file);
+
+
+
+        try {
+
+            const response = await axios.post('http://localhost:9002/image/upload', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            alert('Form submitted successfully');
+        } catch (error) {
+
+            console.error('Error uploading form data:', error);
+
+        }
+
+
+    }
+
+
+
+
     return (
         <>
-            <div class="container">
-                <div class=" text-center mt-5 ">
 
-                    <h1 >Bootstrap Contact Form</h1>
-
-
+            {authority == null && <div class="d-flex align-items-top justify-content-center vh-50 bg-light mt-5">
+                <div class="text-center border border-danger p-4 rounded bg-white shadow">
+                    <h1 class="text-danger mb-3">
+                        <i class="bi bi-exclamation-circle-fill"></i> Access Denied
+                    </h1>
+                    <h1 class="text-secondary fs-4">
+                        You don't have admin access to add items.Please login with admin user
+                    </h1>
+                    <p class="text-secondary fs-5">
+                        Please login with admin user
+                    </p>
                 </div>
-
-
-                <div class="row ">
-                    <div class="col-lg-7 mx-auto">
-                        <div class="card mt-2 mx-auto p-4 bg-light">
-                            <div class="card-body bg-light">
-
-                                <div class="container">
-                                    <form id="contact-form" role="form">
+            </div>}
 
 
 
-                                        <div class="controls">
+            {authority !== null &&
 
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="form_name">Firstname *</label>
-                                                        <input id="form_name" type="text" name="name" class="form-control" placeholder="Please enter your firstname *" required="required" data-error="Firstname is required." />
+                <div className="container">
+                    <div className=" text-center mt-5 ">
 
+                        <h1 >Add your Item deatils</h1>
+
+
+                    </div>
+
+
+                    <div className="row ">
+                        <div className="col-lg-7 mx-auto">
+                            <div className="card mt-2 mx-auto p-4 bg-light">
+                                <div className="card-body bg-light">
+
+                                    <div className="container">
+                                        <form id="contact-form" role="form" onSubmit={handleFileUpload}>
+
+
+
+                                            <div className="controls">
+
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label for="form_name">Title *</label>
+                                                            <input id="form_name" type="text" onChange={handleChange} name="title" className="form-control" required="required" />
+
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label for="form_lastname">Description *</label>
+                                                            <input id="form_lastname" type="text" onChange={handleChange} name="description" className="form-control" required="required" />
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="form_lastname">Lastname *</label>
-                                                        <input id="form_lastname" type="text" name="surname" class="form-control" placeholder="Please enter your lastname *" required="required" data-error="Lastname is required." />
+                                                <div className="row">
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label for="form_name">Price *</label>
+                                                            <input id="form_name" type="text" onChange={handleChange} name="price" className="form-control" required="required" />
+
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <div className="form-group">
+                                                            <label for="form_lastname">Category *</label>
+                                                            <input id="form_lastname" type="text" name="category" onChange={handleChange} className="form-control" required="required" />
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <div className="row">
+                                                    <div className="col-md-12 mt-2 ">
+
+                                                        <label for="formFileLg" className="form-label">Upload item Picture</label>
+                                                        <input className="form-control form-control-lg" name="file" id="formFileLg" onChange={handleChange} type="file" />
+                                                    </div>
+
+
+                                                    <div className="col-md-12 mt-2">
+
+                                                        <input type="submit" className="btn btn-success btn-send  pt-2 btn-block" value="Submit" />
+
+                                                    </div>
+
+                                                </div>
+
+
                                             </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="form_email">Email *</label>
-                                                        <input id="form_email" type="email" name="email" class="form-control" placeholder="Please enter your email *" required="required" data-error="Valid email is required." />
-
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="form_need">Please specify your need *</label>
-                                                        <select id="form_need" name="need" class="form-control" required="required" data-error="Please specify your need.">
-                                                            <option value="" selected disabled>--Select Your Issue--</option>
-                                                            <option >Request Invoice for order</option>
-                                                            <option >Request order status</option>
-                                                            <option >Haven't received cashback yet</option>
-                                                            <option >Other</option>
-                                                        </select>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <div class="form-group">
-                                                        <label for="form_message">Message *</label>
-                                                        <textarea id="form_message" name="message" class="form-control" placeholder="Write your message here." rows="4" required="required" data-error="Please, leave us a message."></textarea
-                                                        >
-                                                    </div>
-
-                                                </div>
-
-
-                                                <div class="col-md-12">
-
-                                                    <input type="submit" class="btn btn-success btn-send  pt-2 btn-block
-                            "value="Send Message" />
-
-                                                </div>
-
-                                            </div>
-
-
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
+
+
                             </div>
 
 
@@ -93,10 +186,8 @@ const Form = () => {
 
 
                     </div>
-
-
                 </div>
-            </div>
+            }
         </>
     );
 

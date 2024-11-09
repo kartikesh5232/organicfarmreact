@@ -11,28 +11,71 @@ const Products = () => {
 
     let componentMounted = true;
 
-    useEffect(() => {
 
+
+
+
+
+    useEffect(() => {
         const getProducts = async () => {
             setLoading(true);
-         
-            const response = await fetch("https://fakestoreapi.com/products");
-            if (componentMounted) {
-                setData(await response.clone().json());
-                setFilter(await response.json());
-                setLoading(false);
-                console.log(filter);
-            }
+            const response = await fetch("http://localhost:9002/image/getallproduct");
+            const products = await response.json();
 
-            return () => {
-                componentMounted = false;
-            }
+            const productsWithBlobUrls = await Promise.all(products.map(async (product) => {
+                const binaryString = atob(product.imageData);
+                const binaryData = new Uint8Array(binaryString.length);
 
-        }
+                for (let i = 0; i < binaryString.length; i++) {
+                    binaryData[i] = binaryString.charCodeAt(i);
+                }
 
+                const blob = new Blob([binaryData], { type: 'image/png' });
+                const blobUrl = URL.createObjectURL(blob);
+
+                return { ...product, imageUrl: blobUrl };
+            }));
+
+            setData(productsWithBlobUrls);
+            setFilter(productsWithBlobUrls);
+            setLoading(false);
+        };
         getProducts();
 
     }, []);
+
+
+
+
+
+
+
+
+
+
+
+    // useEffect(() => {
+
+    //     const getProducts = async () => {
+    //         setLoading(true);
+
+    //         const response = await fetch("https://fakestoreapi.com/products");
+    //         if (componentMounted) {
+    //             setData(await response.clone().json());
+    //             setFilter(await response.json());
+    //             setLoading(false);
+    //             console.log(filter);
+    //         }
+
+    //         return () => {
+    //             componentMounted = false;
+    //         }
+
+    //     }
+
+    //     getProducts();
+
+    // }, []);
 
 
     const Loading = () => {
@@ -40,27 +83,27 @@ const Products = () => {
         return (
             <>
                 <div className='col-md-3'>
-                    <Skeleton height={ 350} />
+                    <Skeleton height={350} />
 
                 </div>
                 <div className='col-md-3'>
-                    <Skeleton height={350 } />
+                    <Skeleton height={350} />
 
                 </div>
                 <div className='col-md-3'>
-                    <Skeleton height={350 } />
+                    <Skeleton height={350} />
 
                 </div>
                 <div className='col-md-3'>
-                    <Skeleton height={ 350} />
+                    <Skeleton height={350} />
 
                 </div>
             </>
         );
     }
 
-    const filterProduct= (type)=>{
-        const updateddata=data.filter((x)=>x.category===type);
+    const filterProduct = (type) => {
+        const updateddata = data.filter((x) => x.category === type);
         setFilter(updateddata);
 
     }
@@ -71,15 +114,16 @@ const Products = () => {
 
             <>
                 <div className='buttons d-flex justify-content-center mb-5 pb-5'>
-                    <button className='btn btn-outline-dark me-4' onClick={()=>setFilter(data)}>
+                    <button className='btn btn-outline-dark me-4' onClick={() => setFilter(data)}>
                         All
                     </button>
-                    <button className='btn btn-outline-dark me-4' onClick={()=>filterProduct("jewelery")}>
-                        Vegetables
-                    </button>
-                    <button className='btn btn-outline-dark me-4' onClick={()=>filterProduct("electronics")}>
+                    <button className='btn btn-outline-dark me-4' onClick={() => filterProduct("fruit")}>
                         Fruits
                     </button>
+                    <button className='btn btn-outline-dark me-4' onClick={() => filterProduct("vegetables")}>
+                        Vegetables
+                    </button>
+                  
 
                 </div>
                 {filter.map((Product) => {
@@ -88,7 +132,7 @@ const Products = () => {
                         <>
                             <div className='col-md-3 mb-4'>
                                 <div className="card h-100 text-center p-4" key={Product.id}>
-                                    <img className="card-img-top" src={Product.image} height="250px" alt={Product.title} />
+                                    <img className="card-img-top" src={Product.imageUrl} height="250px" alt={Product.title} />
                                     <div className="card-body">
                                         <h5 className="card-title mb-0">{Product.title}</h5>
                                         <p className="card-text lead fw-bold">${Product.price}</p>

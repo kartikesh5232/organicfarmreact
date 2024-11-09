@@ -14,6 +14,7 @@ const Navbar = () => {
   const Logout = () => {
 
     localStorage.removeItem('Token');
+    localStorage.removeItem('Authority');
     dispatch(delProfile());
 
   }
